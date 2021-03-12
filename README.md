@@ -7,3 +7,6 @@ https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/169550356/original/3
 
 COVID PIXEL ART
 https://image.freepik.com/free-vector/pixel-art-corona-virus-covid-19-epidemic-infection_360488-88.jpg
+
+WHAT GAME KINDA LOOKS LIKE BUT MORE ZOOMED IN
+https://i.pinimg.com/236x/bb/88/b9/bb88b9b4a549804191e601adef3a0051--pixel-art.jpg
