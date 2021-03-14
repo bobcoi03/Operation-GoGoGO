@@ -216,8 +216,11 @@ def main():
 	#	VIRUS INIT
 	virus1 = Virus()
 	LEFTCLICK = 1
-	while running:							# game loop
-		screen.fill(WHITE)					# BACKGROUND COLOR
+	while running:
+
+		virus1CenterX = virus1.x + (covid_rect.width//2)
+		virus1CenterY = virus1.y + (covid_rect.height//2)			#	game loop
+		screen.fill(WHITE)											#	BACKGROUND COLOR
 		mx,my = pygame.mouse.get_pos()
 		
 		for event in pygame.event.get():
@@ -226,8 +229,9 @@ def main():
 				sys.exit()
 				break
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == LEFTCLICK:
-					virus1.bullets.append([math.atan2((virus1.my)-(covid_rect.height//2),(virus1.mx)-(covid_rect.width//2)),(covid_rect.width//2),(covid_rect.height//2)])
+				if event.button == LEFTCLICK:	
+					#	POSITION OF VIRUS
+					virus1.bullets.append([math.atan2((virus1.my)-(virus1CenterY),(virus1.mx)-(virus1CenterX)),(virus1CenterX),(virus1CenterY)])
 					virus1.mouse_hold = True
 					virus1.fire = True
 
@@ -239,8 +243,6 @@ def main():
 			player.move()
 			player.draw()
 
-
-
 		#	VIRUS loop
 		virus1.draw(mx,my)
 		virus1.fire_funct()
@@ -250,7 +252,9 @@ def main():
 
 		clock.tick(FPS)
 		pygame.display.update()
-main()
+
+if __name__ == '__main__':
+	main()
 
 
 
