@@ -33,31 +33,54 @@ class Virus:
  		self.power = 0
  		self.mouse_hold = False
  		self.mouse_hold_time = 0
+ 		self.fire = False
+ 		self.mx = 0
+ 		self.my = 0
+ 		self.bullets = []
 
  	def mouse_hold_funct(self):
  		if self.mouse_hold == True:
  			self.mouse_hold_time += 1
- 			self.power += 0.5
+ 			if self.power < 100:
+ 				self.power += 0.5
  			print(self.power)
  		else:
  			self.power = 0
  			self.mouse_hold = False
  			self.mouse_hold_time = 0
 
- 	def mouse_img(self,mx,my):
- 		screen.blit(vaccine_img , (mx - (vaccine_rect.width//2.5), my - (vaccine_rect.height) + 10))
+ 	def mouse_img(self):
+ 		screen.blit(vaccine_img , (self.mx - (vaccine_rect.width//2.5), self.my - (vaccine_rect.height) + 10))
 
- 	def sneeze(self):
- 		pass
+ 	def fire_funct(self):
+ 		centerX = vaccine_rect.width//2
+ 		centerY = vaccine_rect.height//2
+ 		#	BLIT MOVING COVID
+ 		for bullet in self.bullets:
+ 			bulletspeed = 1
+ 			index = 0
+ 			velx = math.cos(bullet[0])*bulletspeed
+ 			vely = math.sin(bullet[0])*bulletspeed
+ 			bullet[1] += velx
+ 			bullet[2] += vely
+ 			if bullet[1]<-64 or bullet[1]>2000 or bullet[2]<-64 or bullet[2]>2000:
+ 				self.bullets.pop(index)
+ 			index+= 1
+ 			for projectile in self.bullets:
+ 				bullets1 = pygame.transform.rotate(covid_img, 360-projectile[0]*57.29)
+ 				self.x = projectile[1]
+ 				self.y = projectile[2]
+ 				screen.blit(bullets1, (self.x,self.y))
 
  	def draw(self,mx,my):
  		self.mx = mx
  		self.my = my
  		self.angle = math.atan2(self.my - (covid_rect.width//2), self.mx - (covid_rect.height//2))
- 		screen.blit(covid_img, (self.x,self.y))
+ 		if self.fire == False:
+ 			screen.blit(covid_img, (self.x,self.y))
 
- 	def aim(self,mx,my):
- 		laser = pygame.draw.line(screen,RED, (covid_rect.width//2,covid_rect.height//2),(mx,my))
+ 	def aim(self):
+ 		laser = pygame.draw.line(screen,RED, (self.x + (covid_rect.width//2),self.y + (covid_rect.height//2)),(self.mx,self.my))
 
 class people:
 	RADIUS = 15
@@ -162,8 +185,8 @@ class people:
 			self.player = pygame.draw.circle(screen, BLACK, (self.x,self.y), self.RADIUS)
 	
 	def move(self):
-		horizontalSpeed = 1
-		verticalSpeed = 1
+		horizontalSpeed = random.randint(1,3)
+		verticalSpeed = random.randint(1,3)
 		
 		player_movement = [0,0]
 		if self.movingRight == True:
@@ -189,7 +212,9 @@ def spawn(amount):
 def main():
 	running = True
 	spawn(50)
-	virus1= Virus()
+
+	#	VIRUS INIT
+	virus1 = Virus()
 	LEFTCLICK = 1
 	while running:							# game loop
 		screen.fill(WHITE)					# BACKGROUND COLOR
@@ -202,20 +227,26 @@ def main():
 				break
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if event.button == LEFTCLICK:
+					virus1.bullets.append([math.atan2((virus1.my)-(covid_rect.height//2),(virus1.mx)-(covid_rect.width//2)),(covid_rect.width//2),(covid_rect.height//2)])
 					virus1.mouse_hold = True
+					virus1.fire = True
+
 			if event.type == pygame.MOUSEBUTTONUP:
 				if event.button == LEFTCLICK:
 					virus1.mouse_hold = False
 
-		
 		for player in spawn.players:
 			player.move()
 			player.draw()
 
+
+
+		#	VIRUS loop
 		virus1.draw(mx,my)
+		virus1.fire_funct()
 		virus1.mouse_hold_funct()
-		virus1.aim(mx,my)
-		virus1.mouse_img(mx,my)
+		virus1.aim()
+		virus1.mouse_img()
 
 		clock.tick(FPS)
 		pygame.display.update()
