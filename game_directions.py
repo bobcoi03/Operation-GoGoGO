@@ -24,9 +24,9 @@ vaccine_img.convert_alpha()
 vaccine_mask = pygame.mask.from_surface(vaccine_img)
 vaccine_rect = vaccine_mask.get_rect()
 
-class Virus:
+class Virus():
  	"""docstring for Virus"""
- 	def __init__(self):
+ 	def __init__(self,patient_1):
  		self.x = 0
  		self.y = 0
  		self.angle = 0
@@ -35,6 +35,13 @@ class Virus:
  		self.mx = 0
  		self.my = 0
  		self.bullets = []
+ 		self.patient_1 = patient_1
+
+ 	def spawn_location(self):
+ 		self.x = self.patient_1.x
+ 		self.y = self.patient_1.y
+ 	def initial_move(self):
+ 		pass
 
  	def mouse_img(self):
  		screen.blit(vaccine_img , (self.mx - (vaccine_rect.width//2.5), self.my - (vaccine_rect.height) + 10))
@@ -79,12 +86,13 @@ class patient1():
 		self.speed = 2
 		self.spawn_location = {"left": [0,WIN_HEIGHT//2],"top": [WIN_WIDTH//2,0],"right":[WIN_WIDTH,WIN_HEIGHT//2],"bottom": [WIN_WIDTH//2,WIN_HEIGHT]}
 		self.STARTING_POS = random.randint(1,4)
+		self.speed = 1.5
 
 	def draw(self):
 		patient1 = pygame.draw.circle(screen, RED, (self.x,self.y), self.RADIUS)
 
-	def spawn_location_random(self):
-
+	def spawn_location_random_and_movement(self):
+		#	Spawn Locations
 		if self.STARTING_POS == 1:
 			self.x, self.y = self.spawn_location["left"]
 		elif self.STARTING_POS == 2:
@@ -94,8 +102,20 @@ class patient1():
 		else:
 			self.x,self.y = self.spawn_location["bottom"]
 
+	def move(self):
+		if self.STARTING_POS == 1:
+			self.x += self.speed
+		elif self.STARTING_POS == 2:
+			self.y += self.speed
+		elif self.STARTING_POS == 3:
+			self.x -= self.speed
+		else:
+			self.y -= self.speed
+
 class people:
 	RADIUS = 15
+	horizontalSpeed = random.randint(1,3)
+	verticalSpeed = random.randint(1,3)
 	def __init__(self):
 		self.x = 0
 		self.y = 0
@@ -196,18 +216,16 @@ class people:
 			self.player = pygame.draw.circle(screen, BLACK, (self.x,self.y), self.RADIUS)
 	
 	def move(self):
-		horizontalSpeed = random.randint(1,3)
-		verticalSpeed = random.randint(1,3)
 		
 		player_movement = [0,0]
 		if self.movingRight == True:
-			player_movement[0] += horizontalSpeed
+			player_movement[0] += self.horizontalSpeed
 		if self.movingLeft == True:
-			player_movement[0] -= horizontalSpeed
+			player_movement[0] -= self.horizontalSpeed
 		if self.movingDown == True:
-			player_movement[1] += verticalSpeed
+			player_movement[1] += self.verticalSpeed
 		if self.movingUp == True:
-			player_movement[1] -= verticalSpeed
+			player_movement[1] -= self.verticalSpeed
 		self.x += player_movement[0]
 		self.y += player_movement[1]	
 
@@ -223,10 +241,12 @@ def spawn(amount):
 def main():
 	running = True
 	spawn(50)
-	#	VIRUS INIT
-	virus1 = Virus()
 	#	PATIENT 1 INIT
 	patient_1 = patient1()
+	patient_1.spawn_location_random_and_movement()
+	#	VIRUS INIT
+	virus1 = Virus(patient_1)
+	virus1.spawn_location()
 	LEFTCLICK = 1
 	while running:
 
@@ -264,7 +284,7 @@ def main():
 		virus1.aim()
 		virus1.mouse_img()
 		#	PATIENT loop
-		patient_1.spawn_location_random()
+		patient_1.move()
 		patient_1.draw()
 
 		#	GAME UPDATES
