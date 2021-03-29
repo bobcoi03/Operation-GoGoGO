@@ -30,57 +30,69 @@ class Virus:
  		self.x = 0
  		self.y = 0
  		self.angle = 0
- 		self.power = 0
- 		self.mouse_hold = False
- 		self.mouse_hold_time = 0
+ 		self.power = 1
  		self.fire = False
  		self.mx = 0
  		self.my = 0
  		self.bullets = []
 
- 	def mouse_hold_funct(self):
- 		if self.mouse_hold == True:
- 			self.mouse_hold_time += 1
- 			if self.power < 100:
- 				self.power += 0.5
- 			print(self.power)
- 		else:
- 			self.power = 0
- 			self.mouse_hold = False
- 			self.mouse_hold_time = 0
-
  	def mouse_img(self):
  		screen.blit(vaccine_img , (self.mx - (vaccine_rect.width//2.5), self.my - (vaccine_rect.height) + 10))
 
  	def fire_funct(self):
+
  		centerX = vaccine_rect.width//2
  		centerY = vaccine_rect.height//2
  		#	BLIT MOVING COVID
- 		for bullet in self.bullets:
- 			bulletspeed = 1
- 			index = 0
- 			velx = math.cos(bullet[0])*bulletspeed
- 			vely = math.sin(bullet[0])*bulletspeed
- 			bullet[1] += velx
- 			bullet[2] += vely
- 			if bullet[1]<-64 or bullet[1]>2000 or bullet[2]<-64 or bullet[2]>2000:
- 				self.bullets.pop(index)
- 			index+= 1
- 			for projectile in self.bullets:
- 				bullets1 = pygame.transform.rotate(covid_img, 360-projectile[0]*57.29)
- 				self.x = projectile[1]
- 				self.y = projectile[2]
- 				screen.blit(bullets1, (self.x,self.y))
+ 		if self.fire == True:
+ 			for bullet in self.bullets:
+ 				bulletspeed = self.power
+ 				index = 0
+ 				velx = math.cos(bullet[0])*bulletspeed
+ 				vely = math.sin(bullet[0])*bulletspeed
+ 				bullet[1] += velx
+ 				bullet[2] += vely
+ 				if bullet[1]<-64 or bullet[1]>2000 or bullet[2]<-64 or bullet[2]>2000:
+ 					self.bullets.pop(index)
+ 				index+= 1
+ 				for projectile in self.bullets:
+ 					bullets1 = pygame.transform.rotate(covid_img, 360-projectile[0]*57.29)
+ 					self.x = projectile[1]
+ 					self.y = projectile[2]
+ 					screen.blit(bullets1, (self.x,self.y))
 
  	def draw(self,mx,my):
  		self.mx = mx
  		self.my = my
  		self.angle = math.atan2(self.my - (covid_rect.width//2), self.mx - (covid_rect.height//2))
+ 		
  		if self.fire == False:
  			screen.blit(covid_img, (self.x,self.y))
 
  	def aim(self):
  		laser = pygame.draw.line(screen,RED, (self.x + (covid_rect.width//2),self.y + (covid_rect.height//2)),(self.mx,self.my))
+class patient1():
+	RADIUS = 15
+	def __init__(self):
+		self.x = WIN_WIDTH//2
+		self.y = WIN_HEIGHT//2
+		self.speed = 2
+		self.spawn_location = {"left": [0,WIN_HEIGHT//2],"top": [WIN_WIDTH//2,0],"right":[WIN_WIDTH,WIN_HEIGHT//2],"bottom": [WIN_WIDTH//2,WIN_HEIGHT]}
+		self.STARTING_POS = random.randint(1,4)
+
+	def draw(self):
+		patient1 = pygame.draw.circle(screen, RED, (self.x,self.y), self.RADIUS)
+
+	def spawn_location_random(self):
+
+		if self.STARTING_POS == 1:
+			self.x, self.y = self.spawn_location["left"]
+		elif self.STARTING_POS == 2:
+			self.x, self.y = self.spawn_location["top"]
+		elif self.STARTING_POS == 3:
+			self.x, self.y = self.spawn_location["right"]
+		else:
+			self.x,self.y = self.spawn_location["bottom"]
 
 class people:
 	RADIUS = 15
@@ -129,7 +141,6 @@ class people:
 				self.spawn_quadrant['left-top'] = True
 			else:
 				self.spawn_quadrant['left-bottom'] = True
-
 
 	def delete(self):
 		delete = False
@@ -212,15 +223,16 @@ def spawn(amount):
 def main():
 	running = True
 	spawn(50)
-
 	#	VIRUS INIT
 	virus1 = Virus()
+	#	PATIENT 1 INIT
+	patient_1 = patient1()
 	LEFTCLICK = 1
 	while running:
 
 		virus1CenterX = virus1.x + (covid_rect.width//2)
 		virus1CenterY = virus1.y + (covid_rect.height//2)			#	game loop
-		screen.fill(WHITE)											#	BACKGROUND COLOR
+																	#	BACKGROUND COLOR
 		mx,my = pygame.mouse.get_pos()
 		
 		for event in pygame.event.get():
@@ -232,24 +244,30 @@ def main():
 				if event.button == LEFTCLICK:	
 					#	POSITION OF VIRUS
 					virus1.bullets.append([math.atan2((virus1.my)-(virus1CenterY),(virus1.mx)-(virus1CenterX)),(virus1CenterX),(virus1CenterY)])
-					virus1.mouse_hold = True
+					#	fire = True
 					virus1.fire = True
 
 			if event.type == pygame.MOUSEBUTTONUP:
 				if event.button == LEFTCLICK:
-					virus1.mouse_hold = False
+					pass
 
+		screen.fill(WHITE)
+		
 		for player in spawn.players:
 			player.move()
 			player.draw()
 
 		#	VIRUS loop
-		virus1.draw(mx,my)
 		virus1.fire_funct()
-		virus1.mouse_hold_funct()
+		virus1.draw(mx,my)
+		
 		virus1.aim()
 		virus1.mouse_img()
+		#	PATIENT loop
+		patient_1.spawn_location_random()
+		patient_1.draw()
 
+		#	GAME UPDATES
 		clock.tick(FPS)
 		pygame.display.update()
 
