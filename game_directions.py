@@ -13,7 +13,7 @@ RED = 255,0,0
 GREEN = 0,128,0
 BLUE = 0,255,255
 #	IMAGES
-covid_img = pygame.image.load(os.path.abspath('C:/Users/Admin/Documents/Operation-GoGoGO/images/covidv3.png'))
+covid_img = pygame.image.load(os.path.abspath('C:/Users/Admin/Documents/Operation-GoGoGO/images/covidv2.png'))
 covid_img = pygame.transform.scale(covid_img,(50,29))
 covid_img.convert_alpha()
 covid_mask = pygame.mask.from_surface(covid_img)
@@ -26,34 +26,42 @@ vaccine_rect = vaccine_mask.get_rect()
 
 class Virus():
  	"""docstring for Virus"""
+ 	RADIUS = 8
  	def __init__(self,patient_1):
  		self.x = 0
  		self.y = 0
  		self.angle = 0
- 		self.power = 1
+ 		self.speed = 2
  		self.fire = False
  		self.mx = 0
  		self.my = 0
  		self.bullets = []
  		self.patient_1 = patient_1
-
+ 		# A transparent surface with per-pixel alpha.
+ 		self.surface = pygame.Surface((self.RADIUS*2,self.RADIUS*2), pygame.SRCALPHA)
+ 		self.virus = pygame.draw.circle(self.surface, RED, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
+ 		self.centerX = self.x + self.RADIUS
+ 		self.centerY = self.y + self.RADIUS
+ 	
  	def spawn_location(self):
  		self.x = self.patient_1.x
  		self.y = self.patient_1.y
+ 	def center(self):
+ 		#	CENTER OF Virus
+ 		self.centerX = self.x + self.RADIUS
+ 		self.centerY = self.y + self.RADIUS
+
  	def initial_move(self):
  		pass
 
  	def mouse_img(self):
- 		screen.blit(vaccine_img , (self.mx - (vaccine_rect.width//2.5), self.my - (vaccine_rect.height) + 10))
+ 		screen.blit(vaccine_img , (self.mx, self.my))
 
  	def fire_funct(self):
-
- 		centerX = vaccine_rect.width//2
- 		centerY = vaccine_rect.height//2
  		#	BLIT MOVING COVID
  		if self.fire == True:
  			for bullet in self.bullets:
- 				bulletspeed = self.power
+ 				bulletspeed = self.speed
  				index = 0
  				velx = math.cos(bullet[0])*bulletspeed
  				vely = math.sin(bullet[0])*bulletspeed
@@ -63,21 +71,16 @@ class Virus():
  					self.bullets.pop(index)
  				index+= 1
  				for projectile in self.bullets:
- 					bullets1 = pygame.transform.rotate(covid_img, 360-projectile[0]*57.29)
+ 					bullets1 = pygame.transform.rotate(self.surface, 360-projectile[0]*57.29)
  					self.x = projectile[1]
  					self.y = projectile[2]
- 					screen.blit(bullets1, (self.x,self.y))
+ 	def draw(self):
+ 		screen.blit(self.surface,(self.x,self.y))
 
- 	def draw(self,mx,my):
+ 	def aim(self,mx,my):
  		self.mx = mx
  		self.my = my
- 		self.angle = math.atan2(self.my - (covid_rect.width//2), self.mx - (covid_rect.height//2))
- 		
- 		if self.fire == False:
- 			screen.blit(covid_img, (self.x,self.y))
-
- 	def aim(self):
- 		laser = pygame.draw.line(screen,RED, (self.x + (covid_rect.width//2),self.y + (covid_rect.height//2)),(self.mx,self.my))
+ 		laser = pygame.draw.line(screen,GREEN, (self.centerX,self.centerY),(self.mx,self.my))
 class patient1():
 	RADIUS = 15
 	def __init__(self):
@@ -111,7 +114,6 @@ class patient1():
 			self.x -= self.speed
 		else:
 			self.y -= self.speed
-
 class people:
 	RADIUS = 15
 	horizontalSpeed = random.randint(1,3)
@@ -228,7 +230,6 @@ class people:
 			player_movement[1] -= self.verticalSpeed
 		self.x += player_movement[0]
 		self.y += player_movement[1]	
-
 def spawn(amount):
 	spawn.players = [people() for i in range(amount)]
 
@@ -237,7 +238,6 @@ def spawn(amount):
 			pass
 		player.where_spawn()
 		player.directions()
-
 def main():
 	running = True
 	spawn(50)
@@ -249,10 +249,8 @@ def main():
 	virus1.spawn_location()
 	LEFTCLICK = 1
 	while running:
-
-		virus1CenterX = virus1.x + (covid_rect.width//2)
-		virus1CenterY = virus1.y + (covid_rect.height//2)			#	game loop
-																	#	BACKGROUND COLOR
+			#	game loop
+														#	BACKGROUND COLOR
 		mx,my = pygame.mouse.get_pos()
 		
 		for event in pygame.event.get():
@@ -263,7 +261,7 @@ def main():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if event.button == LEFTCLICK:	
 					#	POSITION OF VIRUS
-					virus1.bullets.append([math.atan2((virus1.my)-(virus1CenterY),(virus1.mx)-(virus1CenterX)),(virus1CenterX),(virus1CenterY)])
+					virus1.bullets.append([math.atan2((virus1.my)-(virus1.y),(virus1.mx)-(virus1.x)),(virus1.x),(virus1.y)])
 					#	fire = True
 					virus1.fire = True
 
@@ -276,12 +274,13 @@ def main():
 		for player in spawn.players:
 			player.move()
 			player.draw()
-
+		#	Virus Calculation
+		virus1.center()
 		#	VIRUS loop
 		virus1.fire_funct()
-		virus1.draw(mx,my)
+		virus1.draw()
 		
-		virus1.aim()
+		virus1.aim(mx,my)
 		virus1.mouse_img()
 		#	PATIENT loop
 		patient_1.move()
@@ -290,7 +289,6 @@ def main():
 		#	GAME UPDATES
 		clock.tick(FPS)
 		pygame.display.update()
-
 if __name__ == '__main__':
 	main()
 
