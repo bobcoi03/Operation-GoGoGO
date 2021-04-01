@@ -1,5 +1,4 @@
 import pygame, sys, math, random, os
-
 pygame.init()
 FPS = 60
 clock = pygame.time.Clock()
@@ -23,15 +22,13 @@ vaccine_img = pygame.image.load(os.path.abspath('C:/Users/Admin/Documents/Operat
 vaccine_img.convert_alpha()
 vaccine_mask = pygame.mask.from_surface(vaccine_img)
 vaccine_rect = vaccine_mask.get_rect()
-
 class Virus():
- 	"""docstring for Virus"""
  	RADIUS = 8
  	def __init__(self,patient_1):
  		self.x = 0
  		self.y = 0
  		self.angle = 0
- 		self.speed = 2
+ 		self.speed = 10
  		self.fire = False
  		self.mx = 0
  		self.my = 0
@@ -39,27 +36,22 @@ class Virus():
  		self.patient_1 = patient_1
  		# A transparent surface with per-pixel alpha.
  		self.surface = pygame.Surface((self.RADIUS*2,self.RADIUS*2), pygame.SRCALPHA)
- 		self.virus = pygame.draw.circle(self.surface, RED, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
+ 		self.virus = pygame.draw.circle(self.surface, BLUE, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
- 	
+ 		self.alive = True
  	def spawn_location(self):
- 		self.x = self.patient_1.x
- 		self.y = self.patient_1.y
+ 		self.x = self.patient_1.x - self.patient_1.RADIUS//2
+ 		self.y = self.patient_1.y - self.patient_1.RADIUS//2
  	def center(self):
  		#	CENTER OF Virus
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
-
- 	def initial_move(self):
- 		pass
-
  	def mouse_img(self):
  		screen.blit(vaccine_img , (self.mx, self.my))
-
  	def fire_funct(self):
  		#	BLIT MOVING COVID
- 		if self.fire == True:
+ 		if self.fire and self.alive:
  			for bullet in self.bullets:
  				bulletspeed = self.speed
  				index = 0
@@ -67,7 +59,7 @@ class Virus():
  				vely = math.sin(bullet[0])*bulletspeed
  				bullet[1] += velx
  				bullet[2] += vely
- 				if bullet[1]<-64 or bullet[1]>2000 or bullet[2]<-64 or bullet[2]>2000:
+ 				if bullet[1]<-64 or bullet[1]>WIN_WIDTH or bullet[2]<-64 or bullet[2]>WIN_HEIGHT:
  					self.bullets.pop(index)
  				index+= 1
  				for projectile in self.bullets:
@@ -75,25 +67,30 @@ class Virus():
  					self.x = projectile[1]
  					self.y = projectile[2]
  	def draw(self):
- 		screen.blit(self.surface,(self.x,self.y))
-
+ 		if self.alive:
+ 			screen.blit(self.surface,(self.x,self.y))
+ 		if self.x < -50 or self.x > WIN_WIDTH + 50 or self.y < -50 or self.y > WIN_HEIGHT + 50:
+ 			self.alive = False
  	def aim(self,mx,my):
  		self.mx = mx
  		self.my = my
- 		laser = pygame.draw.line(screen,GREEN, (self.centerX,self.centerY),(self.mx,self.my))
+ 		if self.alive:
+ 			laser = pygame.draw.line(screen,GREEN, (self.centerX,self.centerY),(self.mx,self.my))
 class patient1():
 	RADIUS = 15
 	def __init__(self):
 		self.x = WIN_WIDTH//2
 		self.y = WIN_HEIGHT//2
-		self.speed = 2
+		self.speed = 4
 		self.spawn_location = {"left": [0,WIN_HEIGHT//2],"top": [WIN_WIDTH//2,0],"right":[WIN_WIDTH,WIN_HEIGHT//2],"bottom": [WIN_WIDTH//2,WIN_HEIGHT]}
 		self.STARTING_POS = random.randint(1,4)
-		self.speed = 1.5
-
+		self.alive = True
 	def draw(self):
-		patient1 = pygame.draw.circle(screen, RED, (self.x,self.y), self.RADIUS)
-
+		if self.x in range(0,WIN_WIDTH) or self.y in range(0,WIN_HEIGHT) and self.alive:
+			patient1 = pygame.draw.circle(screen, RED, (self.x,self.y), self.RADIUS)
+		else:
+			self.x = -10
+			self.y = -10
 	def spawn_location_random_and_movement(self):
 		#	Spawn Locations
 		if self.STARTING_POS == 1:
@@ -104,7 +101,6 @@ class patient1():
 			self.x, self.y = self.spawn_location["right"]
 		else:
 			self.x,self.y = self.spawn_location["bottom"]
-
 	def move(self):
 		if self.STARTING_POS == 1:
 			self.x += self.speed
@@ -127,7 +123,6 @@ class people:
 		self.movingUp = False
 		self.infected = False
 		self.spawn_quadrant = {'right-top': False,'right-bottom':False,'left-top':False,'left-bottom':False,'bottom-right':False,'bottom-left':False,'top-right':False,'top-left':False}
-
 	def where_spawn(self):
 		spawn_coordinates = []
 		sides = random.randint(1,4)
@@ -163,13 +158,11 @@ class people:
 				self.spawn_quadrant['left-top'] = True
 			else:
 				self.spawn_quadrant['left-bottom'] = True
-
 	def delete(self):
 		delete = False
 		if self.x < 0 or self.x > WIN_WIDTH or self.y > WIN_HEIGHT or self.y < 0:
 			delete = True
 		return delete
-
 	def directions(self):
 		fiftyfiftyX = random.randint(1,3)			# 	1 = RIGHT 2 = LEFT
 		fiftyfiftyY = random.randint(1,3)			#	1 = UP 2 = DOWN 3 = NOTHING
@@ -212,13 +205,10 @@ class people:
 				self.movingDown = True
 			else:
 				self.movingUp = True
-
 	def draw(self):
 		if self.delete() == False:
 			self.player = pygame.draw.circle(screen, BLACK, (self.x,self.y), self.RADIUS)
-	
 	def move(self):
-		
 		player_movement = [0,0]
 		if self.movingRight == True:
 			player_movement[0] += self.horizontalSpeed
@@ -229,10 +219,10 @@ class people:
 		if self.movingUp == True:
 			player_movement[1] -= self.verticalSpeed
 		self.x += player_movement[0]
-		self.y += player_movement[1]	
+		self.y += player_movement[1]
 def spawn(amount):
+	# spawns amount of people
 	spawn.players = [people() for i in range(amount)]
-
 	for player in spawn.players:
 		if player.delete() == True:
 			pass
@@ -248,9 +238,7 @@ def main():
 	virus1 = Virus(patient_1)
 	virus1.spawn_location()
 	LEFTCLICK = 1
-	while running:
-			#	game loop
-														#	BACKGROUND COLOR
+	while running:	#	game loop
 		mx,my = pygame.mouse.get_pos()
 		
 		for event in pygame.event.get():
@@ -270,28 +258,24 @@ def main():
 					pass
 
 		screen.fill(WHITE)
-		
+		#	draw & move funct for each individual player
 		for player in spawn.players:
 			player.move()
 			player.draw()
-		#	Virus Calculation
-		virus1.center()
-		#	VIRUS loop
-		virus1.fire_funct()
-		virus1.draw()
-		
-		virus1.aim(mx,my)
-		virus1.mouse_img()
 		#	PATIENT loop
 		patient_1.move()
 		patient_1.draw()
-
+		#	Virus Calculation
+		virus1.center()
+		#	VIRUS loop
+			# starting move
+		virus1.spawn_location()
+		virus1.fire_funct()
+		virus1.draw()
+		virus1.aim(mx,my)
+		virus1.mouse_img()
 		#	GAME UPDATES
 		clock.tick(FPS)
 		pygame.display.update()
 if __name__ == '__main__':
 	main()
-
-
-
-
