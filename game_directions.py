@@ -17,7 +17,6 @@ covid_img = pygame.transform.scale(covid_img,(50,29))
 covid_img.convert_alpha()
 covid_mask = pygame.mask.from_surface(covid_img)
 covid_rect = covid_mask.get_rect()
-
 vaccine_img = pygame.image.load(os.path.abspath('C:/Users/Admin/Documents/Operation-GoGoGO/images/vaccine.png'))
 vaccine_img.convert_alpha()
 vaccine_mask = pygame.mask.from_surface(vaccine_img)
@@ -28,7 +27,7 @@ class Virus():
  		self.x = 0
  		self.y = 0
  		self.angle = 0
- 		self.speed = 10
+ 		self.speed = 5
  		self.fire = False
  		self.mx = 0
  		self.my = 0
@@ -40,18 +39,18 @@ class Virus():
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
  		self.alive = True
- 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		self.hitbox = pygame.Rect(self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		self.draw_hitbox=0
+ 		self.color=RED
  	def spawn_location(self):
  		self.x = self.patient_1.x - self.patient_1.RADIUS//2
  		self.y = self.patient_1.y - self.patient_1.RADIUS//2
- 	def center(self):
- 		#	Center of Virus
+ 	def center(self):		#	Center of Virus
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
  	def mouse_img(self):
  		screen.blit(vaccine_img , (self.mx, self.my))
- 	def fire_funct(self):
- 		#	BLIT MOVING COVID
+ 	def fire_funct(self):	#	BLIT MOVING COVID
  		if self.fire and self.alive:
  			for bullet in self.bullets:
  				bulletspeed = self.speed
@@ -73,8 +72,9 @@ class Virus():
  		if self.x < -50 or self.x > WIN_WIDTH + 50 or self.y < -50 or self.y > WIN_HEIGHT + 50:
  			self.alive = False
  	def hitbox_funct(self):
- 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
- 		draw = pygame.draw.rect(screen, RED, self.hitbox,2)
+ 		self.hitbox = pygame.Rect(self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		self.draw_hitbox = pygame.draw.rect(screen, self.color, self.hitbox,2)
+ 		self.color=RED
  	def aim(self,mx,my):
  		self.mx = mx
  		self.my = my
@@ -116,8 +116,8 @@ class patient1():
 			self.y -= self.speed
 class people:
 	RADIUS = 15
-	horizontalSpeed = random.randint(1,3)
-	verticalSpeed = random.randint(1,3)
+	horizontalSpeed = random.randint(1,2)
+	verticalSpeed = random.randint(1,2)
 	def __init__(self):
 		self.x = 0
 		self.y = 0
@@ -128,7 +128,8 @@ class people:
 		self.infected = False
 		self.spawn_quadrant = {'right-top': False,'right-bottom':False,'left-top':False,'left-bottom':False,'bottom-right':False,'bottom-left':False,'top-right':False,'top-left':False}
 		self.surface = pygame.Surface((self.RADIUS*2,self.RADIUS*2),pygame.SRCALPHA)
-		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+		self.hitbox = pygame.Rect(self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+		self.draw_hitbox=0
 	def where_spawn(self):
 		spawn_coordinates = []
 		sides = random.randint(1,4)
@@ -149,7 +150,6 @@ class people:
 		if sides == 3:			#	BOTTOM
 			self.x = random.randint(0,WIN_WIDTH)
 			self.y = WIN_HEIGHT
-
 			if self.x <= WIN_WIDTH//2:
 				self.spawn_quadrant['bottom-left'] = True
 			else:
@@ -157,14 +157,13 @@ class people:
 		if sides == 4:			#	LEFT
 			self.x = 0
 			self.y = random.randint(0,WIN_HEIGHT)
-
 			if self.y <= WIN_HEIGHT//2:
 				self.spawn_quadrant['left-top'] = True
 			else:
 				self.spawn_quadrant['left-bottom'] = True
 	def hitbox_funct(self):
- 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
- 		draw = pygame.draw.rect(screen, RED, self.hitbox,2)
+ 		self.hitbox = pygame.Rect(self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		self.draw_hitbox = pygame.draw.rect(screen, RED, self.hitbox,2)
 	def delete(self):
 		delete = False
 		if self.x < 0 or self.x > WIN_WIDTH or self.y > WIN_HEIGHT or self.y < 0:
@@ -173,31 +172,24 @@ class people:
 	def directions(self):
 		fiftyfiftyX = random.randint(1,3)			# 	1 = RIGHT 2 = LEFT
 		fiftyfiftyY = random.randint(1,3)			#	1 = UP 2 = DOWN 3 = NOTHING
-	
 		if fiftyfiftyX == 1 and fiftyfiftyY == 3:	# 	STRAIGHT RIGHT
 			self.movingRight = True
 		if fiftyfiftyX == 1 and fiftyfiftyY == 2:	# 	RIGHT DOWN
 			self.movingRight = True
 			self.movingDown = True
-
 		if fiftyfiftyX == 2 and fiftyfiftyY == 1:	#	LEFT UP
 			self.movingLeft = True
 			self.movingUp = True
-
 		if fiftyfiftyX == 1 and fiftyfiftyY == 1:	# 	RIGHT UP
 			self.movingRight = True
 			self.movingUp = True
-
 		if fiftyfiftyX == 2 and fiftyfiftyY == 3:	# 	LEFT
 			self.movingLeft = True
-
 		if fiftyfiftyX == 2 and fiftyfiftyY == 2:	# 	DOWN LEFT
 			self.movingLeft = True
 			self.movingDown = True
-		
 		if fiftyfiftyX == 3 and fiftyfiftyY == 2:	# 	DOWN
 			self.movingDown = True
-		
 		if fiftyfiftyX == 3 and fiftyfiftyY == 1:	#	UP
 			self.movingUp = True
 		if fiftyfiftyX == 3 and fiftyfiftyY == 3:
@@ -235,6 +227,9 @@ def spawn(amount):
 			pass
 		player.where_spawn()
 		player.directions()
+def iscollide(rect1,rect2):
+	collide=rect1.colliderect(rect2)
+	return collide
 def main():
 	running = True
 	spawn(50)
@@ -247,29 +242,27 @@ def main():
 	LEFTCLICK = 1
 	while running:	#	game loop
 		mx,my = pygame.mouse.get_pos()
-		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
 				break
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == LEFTCLICK:	
-					#	POSITION OF VIRUS
+				if event.button == LEFTCLICK:#	POSITION OF VIRUS
 					virus1.bullets.append([math.atan2((virus1.my)-(virus1.y),(virus1.mx)-(virus1.x)),(virus1.x),(virus1.y)])
-					#	fire = True
-					virus1.fire = True
-
+					virus1.fire = True 	#fire = True
 			if event.type == pygame.MOUSEBUTTONUP:
 				if event.button == LEFTCLICK:
 					pass
-
 		screen.fill(WHITE)
 		#	draw & move funct for each individual player
 		for player in spawn.players:
 			player.move()
 			player.draw()
 			player.hitbox_funct()
+			collide=iscollide(virus1.hitbox,player.hitbox)
+			if collide==1:
+				virus1.color = GREEN
 		#	PATIENT loop
 		patient_1.move()
 		patient_1.draw()
@@ -284,7 +277,7 @@ def main():
 		virus1.aim(mx,my)
 		virus1.mouse_img()
 		#	GAME UPDATES
-		clock.tick(FPS)
+		clock.tick(FPS-20)
 		pygame.display.update()
 if __name__ == '__main__':
 	main()
