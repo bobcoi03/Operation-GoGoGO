@@ -40,11 +40,12 @@ class Virus():
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
  		self.alive = True
+ 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
  	def spawn_location(self):
  		self.x = self.patient_1.x - self.patient_1.RADIUS//2
  		self.y = self.patient_1.y - self.patient_1.RADIUS//2
  	def center(self):
- 		#	CENTER OF Virus
+ 		#	Center of Virus
  		self.centerX = self.x + self.RADIUS
  		self.centerY = self.y + self.RADIUS
  	def mouse_img(self):
@@ -71,6 +72,9 @@ class Virus():
  			screen.blit(self.surface,(self.x,self.y))
  		if self.x < -50 or self.x > WIN_WIDTH + 50 or self.y < -50 or self.y > WIN_HEIGHT + 50:
  			self.alive = False
+ 	def hitbox_funct(self):
+ 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		draw = pygame.draw.rect(screen, RED, self.hitbox,2)
  	def aim(self,mx,my):
  		self.mx = mx
  		self.my = my
@@ -123,11 +127,12 @@ class people:
 		self.movingUp = False
 		self.infected = False
 		self.spawn_quadrant = {'right-top': False,'right-bottom':False,'left-top':False,'left-bottom':False,'bottom-right':False,'bottom-left':False,'top-right':False,'top-left':False}
+		self.surface = pygame.Surface((self.RADIUS*2,self.RADIUS*2),pygame.SRCALPHA)
+		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
 	def where_spawn(self):
 		spawn_coordinates = []
 		sides = random.randint(1,4)
-
-		if sides == 1:			# 	UP
+		if sides == 1:							#UP
 			self.x = random.randint(0,WIN_WIDTH)
 			self.y = WIN_HEIGHT - WIN_HEIGHT
 			if self.x <= WIN_WIDTH//2:
@@ -137,7 +142,6 @@ class people:
 		if sides == 2:			#	RIGHT
 			self.x = WIN_WIDTH
 			self.y = random.randint(0,WIN_HEIGHT)
-
 			if self.y <= WIN_HEIGHT//2:
 				self.spawn_quadrant['right-top'] = True
 			else:
@@ -158,6 +162,9 @@ class people:
 				self.spawn_quadrant['left-top'] = True
 			else:
 				self.spawn_quadrant['left-bottom'] = True
+	def hitbox_funct(self):
+ 		self.hitbox = (self.x,self.y,self.RADIUS*2,self.RADIUS*2)
+ 		draw = pygame.draw.rect(screen, RED, self.hitbox,2)
 	def delete(self):
 		delete = False
 		if self.x < 0 or self.x > WIN_WIDTH or self.y > WIN_HEIGHT or self.y < 0:
@@ -166,7 +173,6 @@ class people:
 	def directions(self):
 		fiftyfiftyX = random.randint(1,3)			# 	1 = RIGHT 2 = LEFT
 		fiftyfiftyY = random.randint(1,3)			#	1 = UP 2 = DOWN 3 = NOTHING
-
 	
 		if fiftyfiftyX == 1 and fiftyfiftyY == 3:	# 	STRAIGHT RIGHT
 			self.movingRight = True
@@ -206,8 +212,9 @@ class people:
 			else:
 				self.movingUp = True
 	def draw(self):
+		self.player = pygame.draw.circle(screen, BLACK, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
 		if self.delete() == False:
-			self.player = pygame.draw.circle(screen, BLACK, (self.x,self.y), self.RADIUS)
+			screen.blit(self.surface,(self.x,self.y))
 	def move(self):
 		player_movement = [0,0]
 		if self.movingRight == True:
@@ -262,6 +269,7 @@ def main():
 		for player in spawn.players:
 			player.move()
 			player.draw()
+			player.hitbox_funct()
 		#	PATIENT loop
 		patient_1.move()
 		patient_1.draw()
@@ -269,6 +277,7 @@ def main():
 		virus1.center()
 		#	VIRUS loop
 			# starting move
+		virus1.hitbox_funct()
 		virus1.spawn_location()
 		virus1.fire_funct()
 		virus1.draw()
