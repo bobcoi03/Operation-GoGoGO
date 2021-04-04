@@ -79,7 +79,7 @@ class Virus():
  		if self.alive:
  			laser = pygame.draw.line(screen,GREEN, (self.centerX,self.centerY),(self.mx,self.my))
  	def calculations(self):
- 		self.left_click=True
+ 		pass
 class patient1():
 	RADIUS = 15
 	def __init__(self):
@@ -116,6 +116,7 @@ class patient1():
 			self.y -= self.speed
 class people:
 	RADIUS = 15
+	color=BLACK
 	horizontalSpeed = random.randint(1,2)
 	verticalSpeed = random.randint(1,2)
 	def __init__(self):
@@ -204,9 +205,11 @@ class people:
 			else:
 				self.movingUp = True
 	def draw(self):
-		self.player = pygame.draw.circle(screen, BLACK, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
+		self.player = pygame.draw.circle(screen, self.color, (self.x + self.RADIUS,self.y + self.RADIUS), self.RADIUS)
 		if self.delete() == False:
 			screen.blit(self.surface,(self.x,self.y))
+		if self.infected==True:
+			self.color=RED
 	def move(self):
 		player_movement = [0,0]
 		if self.movingRight == True:
@@ -233,7 +236,8 @@ def iscollide(rect1,rect2):
 def main():
 	global one_second
 	running=True
-	spawn(15)
+	people_infected=0
+	people_function=spawn(15)
 	#	PATIENT 1 INIT
 	patient_1=patient1()
 	patient_1.spawn_location_random_and_movement()
@@ -243,26 +247,22 @@ def main():
 	LEFTCLICK=1
 	while running:	#	game loop
 		mx,my=pygame.mouse.get_pos()
-		while one_second<60 and virus1.left_click==True:
-			one_second+=1
-			virus1.left_click=True
-			if one_second>60:
-				one_second=0
 		for event in pygame.event.get():
 			if event.type==pygame.QUIT:
+				running=False
 				pygame.quit()
 				sys.exit()
 				break
+			if event.type==pygame.MOUSEBUTTONUP:
+				if event.button==LEFTCLICK:
+					virus1.left_click=False
 			if event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==LEFTCLICK:#	POSITION OF VIRUS
 					virus1.bullets.append([math.atan2((virus1.my)-(virus1.y),(virus1.mx)-(virus1.x)),(virus1.x),(virus1.y)])
 					virus1.first_fire=True 	#fire = True
 					virus1.left_click=True
-			if event.type==pygame.MOUSEBUTTONUP:
-				if event.button==LEFTCLICK:
-					virus1.left_click=False
 		screen.fill(WHITE)
-		#	PATIENT loop
+		#	Patient loop
 		patient_1.move()
 		patient_1.draw()
 		#	Virus Calculation
@@ -273,7 +273,7 @@ def main():
 		virus1.fire_funct()
 		virus1.aim(mx,my)
 		virus1.mouse_img()
-		#	draw & move funct for each individual player
+		'''	draw & move funct for each individual player'''
 		for player in spawn.players:
 			player.move()
 			player.draw()
@@ -284,18 +284,15 @@ def main():
 					virus1.color=GREEN
 					virus1.x=player.x+(player.RADIUS//2)
 					virus1.y=player.y+(player.RADIUS//2)
+					player.infected=True
 		#	Draw & Blit Virus
 		virus1.draw()
 		#	GAME UPDATES
 		clock.tick(FPS)
+		#TEST STUFF
 		pygame.display.update()
 if __name__=='__main__':
 	main()
-
-
-
-
-
 
 
 
