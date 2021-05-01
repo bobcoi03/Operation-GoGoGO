@@ -2,7 +2,7 @@ import pygame, sys, math, random, os
 pygame.init()
 FPS=60
 clock=pygame.time.Clock()
-game_name=pygame.display.set_caption('InFeCt')
+game_name=pygame.display.set_caption('Infect')
 WIN_SIZE=WIN_WIDTH, WIN_HEIGHT = 800, 600
 screen=pygame.display.set_mode((WIN_SIZE), pygame.RESIZABLE)
 font=pygame.font.Font("freesansbold.ttf",13)
@@ -25,7 +25,8 @@ vaccine_mask=pygame.mask.from_surface(vaccine_img)
 vaccine_rect=vaccine_mask.get_rect()
 one_second=0
 time=0
-time_list=[2*FPS,4*FPS,6*FPS]
+time_list0=[0,10*FPS,20*FPS]
+time_list1=[5*FPS,15*FPS,25*FPS]
 secure_random = random.SystemRandom()
 def draw_text(text, font, color, surface,x,y):
 	textobj = font.render(text, 1, color)
@@ -48,6 +49,7 @@ class Virus():
  		self.draw_hitbox=0
  		self.color=RED
  		self.left_click=False
+ 		self.on_air=False
  	def spawn_location(self):
  		if self.first_fire==False:
  			self.x=self.patient_1.x-self.patient_1.RADIUS//2
@@ -92,6 +94,11 @@ class Virus():
  	def gameover(self):
  		if self.alive==False:
  			gameover_text=draw_text("Game over", font, RED, screen,WIN_WIDTH/2,WIN_HEIGHT/2-200)
+ 	def can_mousedown(self,people):
+ 		if self.x==people.x+(people.RADIUS//2):
+ 			self.on_air=False
+ 		else:
+ 			self.on_air=True
 class patient1():
 	RADIUS = 15
 	def __init__(self):
@@ -222,23 +229,24 @@ class people:
 			player_movement[1] -= self.verticalSpeed
 		self.x += player_movement[0]
 		self.y += player_movement[1]
-def spawn(amount):
-	# spawns amount of people
-	spawn.players = [people() for i in range(amount)]
-	for player in spawn.players:
+def people_init(players):
+	for player in players:#change player_list
 		player.where_spawn()
 		player.directions()
+	return players # this function works
 def iscollide(rect1,rect2):
 	collide=rect1.colliderect(rect2)
 	return collide
 def main():
 	global one_second, time, font
+	players = [people() for i in range(30)]
 	running=True
 	people_infected=0
-	people_function=spawn(25)
 	#	PATIENT 1 INIT
 	patient_1=patient1()
 	patient_1.spawn_location_random_and_movement()
+	#	People_init
+	people_1=people_init(players)
 	#	VIRUS INIT
 	virus1=Virus(patient_1)
 	virus1.spawn_location()
@@ -247,7 +255,7 @@ def main():
 		screen.fill(WHITE)
 		mx,my=pygame.mouse.get_pos()
 		click=False
-		playagain_rect = pygame.Rect(WIN_WIDTH/2,WIN_HEIGHT-300,100,50)
+		playagain_rect = pygame.Rect(WIN_WIDTH/2,WIN_HEIGHT-400,100,50)
 		for event in pygame.event.get():
 			if event.type==pygame.QUIT:
 				running=False
@@ -275,10 +283,11 @@ def main():
 		virus1.aim(mx,my)
 		#virus1.mouse_img()
 		'''	draw & move funct for each individual player'''
-		for player in spawn.players:
+		for player in players:
 			player.move()
 			player.draw()
 			player.hitbox_funct()
+			virus1.can_mousedown(player)
 			collide=iscollide(virus1.hitbox, player.hitbox)
 			if virus1.left_click==False:
 				if collide==1 and virus1.first_fire==1:
@@ -292,58 +301,17 @@ def main():
 				virus1.alive=True
 				virus1.x=WIN_WIDTH/2
 				virus1.y=WIN_HEIGHT/2
-				people_function=spawn(25)
+
 		if virus1.alive==False:
 			playagain_box  = pygame.draw.rect(screen, RED, playagain_rect,width=0,)
-			playagain_button = draw_text('PLAY AGAIN', font, WHITE, screen, WIN_WIDTH/2, WIN_HEIGHT-300)
+			playagain_button = draw_text('PLAY AGAIN', font, WHITE, screen, WIN_WIDTH/2, WIN_HEIGHT-400)
 		virus1.draw()
 		virus1.gameover()
 		#	GAME UPDATES
 		clock.tick(FPS)
 		time+=1
-		draw_text("Time: " + str(time), font, RED, screen, WIN_WIDTH/2,WIN_HEIGHT/2)
+		time_text=draw_text("Time: " + str(time), font, RED, screen, WIN_WIDTH/2,WIN_HEIGHT/2)
 		#TEST STUFF
 		pygame.display.update()
 if __name__=='__main__':
 	main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
