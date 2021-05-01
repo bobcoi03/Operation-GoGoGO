@@ -2,7 +2,7 @@ import pygame, sys, math, random, os
 pygame.init()
 FPS=60
 clock=pygame.time.Clock()
-game_name=pygame.display.set_caption('Infect')
+game_name=pygame.display.set_caption('C-19')
 WIN_SIZE=WIN_WIDTH, WIN_HEIGHT = 800, 600
 screen=pygame.display.set_mode((WIN_SIZE), pygame.RESIZABLE)
 font=pygame.font.Font("freesansbold.ttf",13)
@@ -94,11 +94,6 @@ class Virus():
  	def gameover(self):
  		if self.alive==False:
  			gameover_text=draw_text("Game over", font, RED, screen,WIN_WIDTH/2,WIN_HEIGHT/2-200)
- 	def can_mousedown(self,people):
- 		if self.x==people.x+(people.RADIUS//2):
- 			self.on_air=False
- 		else:
- 			self.on_air=True
 class patient1():
 	RADIUS = 15
 	def __init__(self):
@@ -151,6 +146,7 @@ class people:
 		self.hitbox = pygame.Rect(self.x,self.y,self.RADIUS*2,self.RADIUS*2)
 		self.draw_hitbox=0
 		self.alive=True
+		self.has_been_counted=False
 	def where_spawn(self):
 		spawn_coordinates = []
 		sides = random.randint(1,4)
@@ -234,7 +230,7 @@ def people_init(players):
 		player.where_spawn()
 		player.directions()
 	return players # this function works
-def iscollide(rect1,rect2):
+def is_collide(rect1,rect2):
 	collide=rect1.colliderect(rect2)
 	return collide
 def main():
@@ -242,6 +238,7 @@ def main():
 	players = [people() for i in range(30)]
 	running=True
 	people_infected=0
+	time_score=0
 	#	PATIENT 1 INIT
 	patient_1=patient1()
 	patient_1.spawn_location_random_and_movement()
@@ -271,6 +268,11 @@ def main():
 					virus1.first_fire=True 	#fire = True
 					virus1.left_click=True
 					click = True
+		if playagain_rect.collidepoint((mx, my)):
+			if click and virus1.alive==False:
+				virus1.x=WIN_WIDTH/2
+				virus1.y=WIN_HEIGHT/2
+				virus1.alive=True
 		#	Patient loop
 		patient_1.move()
 		patient_1.draw()
@@ -287,20 +289,25 @@ def main():
 			player.move()
 			player.draw()
 			player.hitbox_funct()
-			virus1.can_mousedown(player)
-			collide=iscollide(virus1.hitbox, player.hitbox)
+			collide=is_collide(virus1.hitbox, player.hitbox)
 			if virus1.left_click==False:
-				if collide==1 and virus1.first_fire==1:
+				if collide==True and virus1.first_fire==1:
 					virus1.color=GREEN
 					virus1.x=player.x+(player.RADIUS//2)
 					virus1.y=player.y+(player.RADIUS//2)
 					player.infected=True
-		#	Draw & Blit Virus
-		if playagain_rect.collidepoint((mx, my)):
-			if click and virus1.alive==False:
-				virus1.alive=True
-				virus1.x=WIN_WIDTH/2
-				virus1.y=WIN_HEIGHT/2
+					# SCORE FUNCTION
+					virus1.on_air=False
+			else:
+				collide=0
+				virus1.on_air=True
+			if player.infected==True and player.has_been_counted==False:
+				time_score+=1
+				if time_score==30:
+					people_infected+=1
+			if time_score>=32 and player.has_been_counted==False:
+				time_score=0
+				player.has_been_counted=True
 
 		if virus1.alive==False:
 			playagain_box  = pygame.draw.rect(screen, RED, playagain_rect,width=0,)
@@ -311,6 +318,8 @@ def main():
 		clock.tick(FPS)
 		time+=1
 		time_text=draw_text("Time: " + str(time), font, RED, screen, WIN_WIDTH/2,WIN_HEIGHT/2)
+		score_text=draw_text("People infected: " + str(people_infected), font, RED, screen, WIN_WIDTH/2,WIN_HEIGHT/2 + 50)
+		time_score_text=draw_text("time_Score: " + str(time_score), font, RED, screen, WIN_WIDTH/2,WIN_HEIGHT/2 + 100)
 		#TEST STUFF
 		pygame.display.update()
 if __name__=='__main__':
