@@ -23,11 +23,11 @@ vaccine_img=pygame.image.load(os.path.abspath('C:/Users/Admin/Documents/Operatio
 vaccine_img.convert_alpha()
 vaccine_mask=pygame.mask.from_surface(vaccine_img)
 vaccine_rect=vaccine_mask.get_rect()
-one_second=0
 time=0
 time_list0=[0,10*FPS,20*FPS]
 time_list1=[5*FPS,15*FPS,25*FPS]
 secure_random = random.SystemRandom()
+people_infected=0
 def draw_text(text, font, color, surface,x,y):
 	textobj = font.render(text, 1, color)
 	textrect = textobj.get_rect()
@@ -225,6 +225,16 @@ class people:
 			player_movement[1] -= self.verticalSpeed
 		self.x += player_movement[0]
 		self.y += player_movement[1]
+	def keep_score(self,time_score, people_infected):
+		if self.infected == True and self.has_been_counted == False:
+			time_score+=1
+			if time_score == 10:
+				people_infected+=1
+			if time_score >= 12 and self.has_been_counted == False:
+				time_score=0
+				self.has_been_counted= True
+		return people_infected, time_score
+
 def people_init(players):
 	for player in players:#change player_list
 		player.where_spawn()
@@ -234,10 +244,9 @@ def is_collide(rect1,rect2):
 	collide=rect1.colliderect(rect2)
 	return collide
 def main():
-	global one_second, time, font
+	global one_second, time, font, people_infected
 	players = [people() for i in range(30)]
 	running=True
-	people_infected=0
 	time_score=0
 	#	PATIENT 1 INIT
 	patient_1=patient1()
@@ -301,13 +310,15 @@ def main():
 			else:
 				collide=0
 				virus1.on_air=True
-			if player.infected==True and player.has_been_counted==False:
-				time_score+=1
-				if time_score==30:
-					people_infected+=1
-			if time_score>=32 and player.has_been_counted==False:
-				time_score=0
-				player.has_been_counted=True
+			# scoring function
+			people_infected, time_score = player.keep_score(time_score, people_infected)
+			#if player.infected==True and player.has_been_counted==False:
+			#	time_score+=1
+			#	if time_score==30:
+			#		people_infected+=1
+			#if time_score>=32 and player.has_been_counted==False:
+			#	time_score=0
+#				player.has_been_counted=True
 
 		if virus1.alive==False:
 			playagain_box  = pygame.draw.rect(screen, RED, playagain_rect,width=0,)
