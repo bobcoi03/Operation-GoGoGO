@@ -272,15 +272,13 @@ def main():
 				if event.button==LEFTCLICK:
 					virus1.left_click=False
 			if event.type==pygame.MOUSEBUTTONDOWN:
-				if event.button==LEFTCLICK:#	POSITION OF VIRUS
+				if event.button==LEFTCLICK and virus1.on_air==False:#	POSITION OF VIRUS
 					virus1.bullets.append([math.atan2((virus1.my)-(virus1.y),(virus1.mx)-(virus1.x)),(virus1.x),(virus1.y)])
 					virus1.first_fire=True 	#fire = True
 					virus1.left_click=True
 					click = True
 		if playagain_rect.collidepoint((mx, my)):
 			if click and virus1.alive==False:
-				virus1.x=WIN_WIDTH/2
-				virus1.y=WIN_HEIGHT/2
 				virus1.alive=True
 		#	Patient loop
 		patient_1.move()
@@ -305,20 +303,12 @@ def main():
 					virus1.x=player.x+(player.RADIUS//2)
 					virus1.y=player.y+(player.RADIUS//2)
 					player.infected=True
-					# SCORE FUNCTION
 					virus1.on_air=False
 			else:
 				collide=0
 				virus1.on_air=True
 			# scoring function
 			people_infected, time_score = player.keep_score(time_score, people_infected)
-			#if player.infected==True and player.has_been_counted==False:
-			#	time_score+=1
-			#	if time_score==30:
-			#		people_infected+=1
-			#if time_score>=32 and player.has_been_counted==False:
-			#	time_score=0
-#				player.has_been_counted=True
 
 		if virus1.alive==False:
 			playagain_box  = pygame.draw.rect(screen, RED, playagain_rect,width=0,)
